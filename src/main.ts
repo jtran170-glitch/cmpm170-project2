@@ -2,13 +2,35 @@ const app = document.querySelector<HTMLElement>("#app")!;
 
 const heading = document.createElement("h1");
 heading.textContent = "CMPM 170 Project 2 Group 18";
+app.append(heading);
+
+// game state variables
+let totalPlayers = 0;
+let currentPlayer = 1;
+let currentRound = 1;
+let playerDrawings: Command[][] = [];
+const prompts = ["a snowman", "a panda", "a turkey"];
+let currentPrompt = "";
+let similarities: number | null = null;
+
+// view containers
+const setupView = document.createElement("div");
+const drawView = document.createElement("div");
+const switchView = document.createElement("div");
+const judgeView = document.createElement("div");
+
+function showView(view: HTMLDivElement) {
+  [setupView, drawView, switchView, judgeView].forEach((v) =>
+    v.style.display = "none"
+  );
+  view.style.display = "block";
+}
 
 const canvas = document.createElement("canvas");
 canvas.width = 512;
 canvas.height = 512;
 canvas.style.border = "2px solid #000000";
-
-app.append(heading, canvas);
+drawView.append(canvas);
 
 const ctx = canvas.getContext("2d")!;
 const cursor = { active: false, x: 0, y: 0 };
@@ -51,6 +73,16 @@ class LineCommand implements Command {
   }
 }
 
+class CircleCommand implements Command {
+  draw(ctx: CanvasRenderingContext2D): void {
+    ctx.beginPath();
+    ctx.arc(256, 256, 100, 0, 2 * Math.PI);
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+}
+
 const commands: Command[] = [];
 const redoStack: Command[] = [];
 let currentLine: LineCommand | null = null;
@@ -71,14 +103,14 @@ markersDiv.style.marginBottom = "10px";
 markersDiv.style.display = "flex";
 markersDiv.style.alignItems = "center";
 markersDiv.style.flexWrap = "wrap";
-app.append(markersDiv);
+drawView.append(markersDiv);
 
 const colorsDiv = document.createElement("div");
 colorsDiv.style.marginBottom = "10px";
 colorsDiv.style.display = "flex";
 colorsDiv.style.alignItems = "center";
 colorsDiv.style.flexWrap = "wrap";
-app.append(colorsDiv);
+drawView.append(colorsDiv);
 
 function createDrawingButton(
   symbol: string,
@@ -231,14 +263,14 @@ canvas.addEventListener("mouseup", () => {
 });
 
 const controlsDiv = document.createElement("div");
-app.append(controlsDiv);
+drawView.append(controlsDiv);
 
 const undoButton = document.createElement("button");
 undoButton.innerHTML = "undo";
 controlsDiv.append(undoButton);
 
 undoButton.addEventListener("click", () => {
-  if (commands.length > 0) {
+  if (commands.length > 1) { // accounting for first circle command
     redoStack.push(commands.pop()!);
     redraw();
   }
@@ -260,6 +292,167 @@ clearButton.innerHTML = "clear";
 controlsDiv.append(clearButton);
 
 clearButton.addEventListener("click", () => {
-  commands.splice(0, commands.length);
+  commands.splice(1, commands.length - 1); // accounting for first circle command
   redraw();
+});
+
+// setup view
+const rulesTitle = document.createElement("h2");
+rulesTitle.textContent = "How to Play";
+const rulesText = document.createElement("p");
+rulesText.innerHTML = `
+1. Choose the number of players who will draw. An extra person who will not draw will be the judge.<br>
+2. A random prompt will be given. Every canvas starts with a circle.<br>
+3. Each players gets 15 seconds to draw the prompt. NEITHER PLAYERS NOR THE JUDGE ARE ALLOWED TO COMMUNICATE WITH EACH OTHER IN ANY WAY.<br>
+4. The next player goes after the first person draws.<br>
+5. After all players take their turn to draw, the judge will review all the drawings that were made that round.<br>
+6. The judge determines if all the drawings are the same i.e. having the same features. If yes, the players win the game. If no, the judge must reveal how many similarities they found between all the drawings, then the drawing phase begins again.
+`;
+rulesText.style.maxWidth = "400px";
+rulesText.style.lineHeight = "1.5";
+
+const playerInput = document.createElement("input");
+playerInput.type = "number";
+playerInput.min = "2";
+playerInput.value = "3";
+
+const startButton = document.createElement("button");
+startButton.innerHTML = "Start";
+
+setupView.append(
+  rulesTitle,
+  rulesText,
+  document.createTextNode("How many players? "),
+  playerInput,
+  startButton,
+);
+app.append(setupView, drawView, switchView, judgeView);
+
+startButton.addEventListener("click", () => {
+  totalPlayers = parseInt(playerInput.value);
+  currentPlayer = 1;
+  currentRound = 1;
+  similarities = null;
+  playerDrawings = [];
+  currentPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+  startDrawingTurn();
+});
+showView(setupView);
+
+// drawing and switching view
+const timerDisplay = document.createElement("h2");
+drawView.prepend(timerDisplay);
+
+const switchMessage = document.createElement("h1");
+switchView.append(switchMessage);
+
+function startDrawingTurn() {
+  showView(drawView);
+  commands.splice(0, commands.length);
+  redoStack.splice(0, redoStack.length);
+  commands.push(new CircleCommand());
+  redraw();
+
+  let timeRemaining = 15;
+  timerDisplay.textContent = similarities !== null
+    ? `Round ${currentRound} | Player ${currentPlayer}/${totalPlayers} - Draw: ${currentPrompt} (${timeRemaining}s). There were ${similarities} similarities last round.`
+    : `Round ${currentRound} | Player ${currentPlayer}/${totalPlayers} - Draw: ${currentPrompt} (${timeRemaining}s)`;
+  const drawTimer = setInterval(() => {
+    timeRemaining--;
+    timerDisplay.textContent = similarities !== null
+      ? `Round ${currentRound} | Player ${currentPlayer}/${totalPlayers} - Draw: ${currentPrompt} (${timeRemaining}s). There were ${similarities} similarities last round.`
+      : `Round ${currentRound} | Player ${currentPlayer}/${totalPlayers} - Draw: ${currentPrompt} (${timeRemaining}s)`;
+    if (timeRemaining <= 0) {
+      clearInterval(drawTimer);
+      endDrawingTurn();
+    }
+  }, 1000);
+}
+
+function endDrawingTurn() {
+  playerDrawings.push([...commands]);
+  if (currentPlayer < totalPlayers) {
+    currentPlayer++;
+    startPlayerSwitchTimer();
+  } else {
+    startJudgeSwitchTimer();
+  }
+}
+
+function startPlayerSwitchTimer() {
+  showView(switchView);
+  let switchTime = 5;
+  switchMessage.textContent =
+    `Player ${currentPlayer} drawing in ${switchTime}s`;
+  const switchTimer = setInterval(() => {
+    switchTime--;
+    switchMessage.textContent =
+      `Player ${currentPlayer} drawing in ${switchTime}s`;
+    if (switchTime <= 0) {
+      clearInterval(switchTimer);
+      startDrawingTurn();
+    }
+  }, 1000);
+}
+
+function startJudgeSwitchTimer() {
+  showView(switchView);
+  let switchTime = 5;
+  switchMessage.textContent = `Judge judging in ${switchTime}s`;
+  const switchTimer = setInterval(() => {
+    switchTime--;
+    switchMessage.textContent = `Judge judging in ${switchTime}s`;
+    if (switchTime <= 0) {
+      clearInterval(switchTimer);
+      startJudgingPhase();
+    }
+  }, 1000);
+}
+
+// judging view
+const galleryDiv = document.createElement("div");
+const judgePrompt = document.createElement("h3");
+judgePrompt.textContent = "Are all the drawings the same?";
+
+const matchButton = document.createElement("button");
+matchButton.textContent = "Yes";
+const noMatchButton = document.createElement("button");
+noMatchButton.textContent = "No";
+judgeView.append(galleryDiv, judgePrompt, matchButton, noMatchButton);
+
+function startJudgingPhase() {
+  showView(judgeView);
+  galleryDiv.innerHTML = "";
+
+  playerDrawings.forEach((playerCommands, index) => {
+    const miniCanvas = document.createElement("canvas");
+    miniCanvas.width = 256;
+    miniCanvas.height = 256;
+    miniCanvas.style.border = "1px solid black";
+    miniCanvas.style.margin = "10px";
+
+    const miniCtx = miniCanvas.getContext("2d")!;
+    miniCtx.scale(0.5, 0.5);
+    for (const cmd of playerCommands) {
+      cmd.draw(miniCtx);
+    }
+    const label = document.createElement("p");
+    label.textContent = `Player ${index + 1}`;
+    const wrapper = document.createElement("div");
+    wrapper.style.display = "inline-block";
+    wrapper.append(label, miniCanvas);
+    galleryDiv.append(wrapper);
+  });
+}
+
+matchButton.addEventListener("click", () => {
+  showView(setupView);
+});
+
+noMatchButton.addEventListener("click", () => {
+  similarities = parseInt(prompt("How many similarities are there?")!);
+  currentPlayer = 1;
+  currentRound++;
+  playerDrawings = [];
+  startDrawingTurn();
 });
