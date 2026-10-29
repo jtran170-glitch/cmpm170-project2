@@ -339,13 +339,15 @@ setupView.append(
 app.append(setupView, drawView, switchView, judgeView);
 
 startButton.addEventListener("click", () => {
-  totalPlayers = parseInt(playerInput.value);
-  currentPlayer = 1;
-  currentRound = 1;
-  similarities = null;
-  playerDrawings = [];
-  currentPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-  startDrawingTurn();
+  if (parseInt(playerInput.value) >= parseInt(playerInput.min)) {
+    totalPlayers = parseInt(playerInput.value);
+    currentPlayer = 1;
+    currentRound = 1;
+    similarities = null;
+    playerDrawings = [];
+    currentPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+    startDrawingTurn();
+  }
 });
 showView(setupView);
 
