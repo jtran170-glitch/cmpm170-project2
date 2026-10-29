@@ -12,6 +12,8 @@ let playerDrawings: Command[][] = [];
 const prompts = ["a snowman", "a panda", "a turkey"];
 let currentPrompt = "";
 let similarities: number | null = null;
+const DRAW_TIME = 15;
+const SWITCH_TIME = 5;
 
 // view containers
 const setupView = document.createElement("div");
@@ -303,8 +305,8 @@ const rulesText = document.createElement("p");
 rulesText.innerHTML = `
 1. Choose the number of players who will draw. An extra person who will not draw will be the judge.<br>
 2. A random prompt will be given. Every canvas starts with a circle.<br>
-3. Each players gets 15 seconds to draw the prompt. NEITHER PLAYERS NOR THE JUDGE ARE ALLOWED TO COMMUNICATE WITH EACH OTHER IN ANY WAY.<br>
-4. The next player goes after the first person draws.<br>
+3. Each players gets ${DRAW_TIME} seconds to draw the prompt. NEITHER PLAYERS NOR THE JUDGE ARE ALLOWED TO COMMUNICATE WITH EACH OTHER IN ANY WAY.<br>
+4. The next player goes after the first person draws. They have ${SWITCH_TIME} seconds to switch players.<br>
 5. After all players take their turn to draw, the judge will review all the drawings that were made that round.<br>
 6. The judge determines if all the drawings are the same i.e. having the same features. If yes, the players win the game. If no, the judge must reveal how many similarities they found between all the drawings, then the drawing phase begins again.
 `;
@@ -353,7 +355,7 @@ function startDrawingTurn() {
   commands.push(new CircleCommand());
   redraw();
 
-  let timeRemaining = 15;
+  let timeRemaining = DRAW_TIME;
   timerDisplay.textContent = similarities !== null
     ? `Round ${currentRound} | Player ${currentPlayer}/${totalPlayers} - Draw: ${currentPrompt} (${timeRemaining}s). There were ${similarities} similarities last round.`
     : `Round ${currentRound} | Player ${currentPlayer}/${totalPlayers} - Draw: ${currentPrompt} (${timeRemaining}s)`;
@@ -381,7 +383,7 @@ function endDrawingTurn() {
 
 function startPlayerSwitchTimer() {
   showView(switchView);
-  let switchTime = 5;
+  let switchTime = SWITCH_TIME;
   switchMessage.textContent =
     `Player ${currentPlayer} drawing in ${switchTime}s`;
   const switchTimer = setInterval(() => {
@@ -397,7 +399,7 @@ function startPlayerSwitchTimer() {
 
 function startJudgeSwitchTimer() {
   showView(switchView);
-  let switchTime = 5;
+  let switchTime = SWITCH_TIME;
   switchMessage.textContent = `Judge judging in ${switchTime}s`;
   const switchTimer = setInterval(() => {
     switchTime--;
@@ -451,6 +453,9 @@ matchButton.addEventListener("click", () => {
 
 noMatchButton.addEventListener("click", () => {
   similarities = parseInt(prompt("How many similarities are there?")!);
+  while (Number.isNaN(similarities)) {
+    similarities = parseInt(prompt("How many similarities are there?")!);
+  }
   currentPlayer = 1;
   currentRound++;
   playerDrawings = [];
