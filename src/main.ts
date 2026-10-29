@@ -12,7 +12,7 @@ let playerDrawings: Command[][] = [];
 const prompts = ["a snowman", "a panda", "a turkey"];
 let currentPrompt = "";
 let similarities: number | null = null;
-const DRAW_TIME = 45;
+const DRAW_TIME = 30;
 const SWITCH_TIME = 5;
 
 // view containers
@@ -311,7 +311,7 @@ const rulesText = document.createElement("p");
 rulesText.innerHTML = `
 1. Select the number of players who will draw. One player not included will not draw and will be the judge.<br>
 2. A random prompt will be given. The goal is to draw the prompt as accurately as possible. Every canvas starts with a circle.<br>
-3. Each players is allotted ${DRAW_TIME} seconds to draw the prompt. Do not show other players your drawing.<br>
+3. Each player is allotted ${DRAW_TIME} seconds to draw the prompt. Do not show other players your drawing.<br>
 4. NEITHER PLAYERS NOR THE JUDGE ARE ALLOWED TO COMMUNICATE WITH EACH OTHER IN ANY WAY.<br>
 5. Once a player's timer ends, the next player takes their turn. They have ${SWITCH_TIME} seconds to switch players.<br>
 6. After all players draw, the judge will review all the drawings made that round.<br>
