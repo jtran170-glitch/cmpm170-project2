@@ -21,26 +21,29 @@ interface Point {
   y: number;
 }
 
-interface Stroke {
-  points: Point[];
-  color: string;
-  thickness: number;
+interface Command {
+  draw(ctx: CanvasRenderingContext2D): void;
 }
 
-const strokes: Stroke[] = [];
-const redoStack: Stroke[] = [];
-let currentStroke: Stroke | null = null;
+class LineCommand implements Command {
+  points: Point[] = [];
+  constructor(
+    public color: string,
+    public thickness: number,
+    startX: number,
+    startY: number,
+  ) {
+    this.points.push({ x: startX, y: startY });
+  }
 
-function redraw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (const stroke of strokes) {
-    if (stroke.points.length > 0) {
+  draw(ctx: CanvasRenderingContext2D): void {
+    if (this.points.length > 0) {
       ctx.beginPath();
-      ctx.strokeStyle = stroke.color;
-      ctx.lineWidth = stroke.thickness;
-      const { x, y } = stroke.points[0];
+      ctx.strokeStyle = this.color;
+      ctx.lineWidth = this.thickness;
+      const { x, y } = this.points[0];
       ctx.moveTo(x, y);
-      for (const { x, y } of stroke.points) {
+      for (const { x, y } of this.points) {
         ctx.lineTo(x, y);
       }
       ctx.stroke();
@@ -48,18 +51,90 @@ function redraw() {
   }
 }
 
+class StickerCommand implements Command {
+  constructor(public x: number, public y: number, public emoji: string) {}
+
+  draw(ctx: CanvasRenderingContext2D): void {
+    ctx.font = "32px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(this.emoji, this.x, this.y);
+  }
+}
+
+const commands: Command[] = [];
+const redoStack: Command[] = [];
+let currentLine: LineCommand | null = null;
+let currentTool: "marker" | "sticker" = "marker";
+let currentThickness = 2;
+let currentSticker = "😃";
+let currentColor = "#000000";
+
+function redraw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const cmd of commands) {
+    cmd.draw(ctx);
+  }
+}
+
+const toolsDiv = document.createElement("div");
+toolsDiv.style.marginBottom = "10px";
+app.append(toolsDiv);
+
+const thinButton = document.createElement("button");
+thinButton.innerHTML = "thin marker";
+thinButton.onclick = () => {
+  currentTool = "marker";
+  currentThickness = 2;
+};
+toolsDiv.append(thinButton);
+
+const thickButton = document.createElement("button");
+thickButton.innerHTML = "thick marker";
+thickButton.onclick = () => {
+  currentTool = "marker";
+  currentThickness = 6;
+};
+toolsDiv.append(thickButton);
+
+const colorPicker = document.createElement("input");
+colorPicker.type = "color";
+colorPicker.value = currentColor;
+colorPicker.oninput = (e) => {
+  currentColor = (e.target as HTMLInputElement).value;
+};
+toolsDiv.append(colorPicker);
+
+const stickers = ["😃", "🔥", "👍"];
+for (const emoji of stickers) {
+  const btn = document.createElement("button");
+  btn.innerHTML = emoji;
+  btn.onclick = () => {
+    currentTool = "sticker";
+    currentSticker = emoji;
+  };
+  toolsDiv.append(btn);
+}
+
 canvas.addEventListener("mousedown", (e) => {
   cursor.active = true;
   cursor.x = e.offsetX;
   cursor.y = e.offsetY;
 
-  currentStroke = {
-    points: [{ x: e.offsetX, y: e.offsetY }],
-    color: "#000000",
-    thickness: 1,
-  };
   redoStack.splice(0, redoStack.length);
-  strokes.push(currentStroke);
+
+  if (currentTool === "marker") {
+    currentLine = new LineCommand(
+      currentColor,
+      currentThickness,
+      e.offsetX,
+      e.offsetY,
+    );
+    commands.push(currentLine);
+  } else {
+    commands.push(new StickerCommand(e.offsetX, e.offsetY, currentSticker));
+  }
+
   redraw();
 });
 
@@ -67,52 +142,47 @@ canvas.addEventListener("mousemove", (e) => {
   if (cursor.active) {
     cursor.x = e.offsetX;
     cursor.y = e.offsetY;
-    currentStroke?.points.push({ x: e.offsetX, y: e.offsetY });
+    currentLine?.points.push({ x: e.offsetX, y: e.offsetY });
     redraw();
   }
 });
 
 canvas.addEventListener("mouseup", () => {
   cursor.active = false;
-  currentStroke = null;
+  currentLine = null;
   redraw();
 });
 
-const clearButton = document.createElement("button");
-clearButton.innerHTML = "clear";
-app.append(clearButton);
-
-clearButton.addEventListener("click", () => {
-  strokes.splice(0, strokes.length);
-  redraw();
-});
-
-const redrawButton = document.createElement("button");
-redrawButton.innerHTML = "redraw";
-app.append(redrawButton);
-
-redrawButton.addEventListener("click", () => {
-  redraw();
-});
+const controlsDiv = document.createElement("div");
+app.append(controlsDiv);
 
 const undoButton = document.createElement("button");
 undoButton.innerHTML = "undo";
-app.append(undoButton);
+controlsDiv.append(undoButton);
 
 undoButton.addEventListener("click", () => {
-  if (strokes.length > 0) {
-    redoStack.push(strokes.pop()!);
+  if (commands.length > 0) {
+    redoStack.push(commands.pop()!);
     redraw();
   }
 });
 
 const redoButton = document.createElement("button");
 redoButton.innerHTML = "redo";
-app.append(redoButton);
+controlsDiv.append(redoButton);
 
 redoButton.addEventListener("click", () => {
   if (redoStack.length > 0) {
-    strokes.push(redoStack.pop()!);
+    commands.push(redoStack.pop()!);
     redraw();
   }
+});
+
+const clearButton = document.createElement("button");
+clearButton.innerHTML = "clear";
+controlsDiv.append(clearButton);
+
+clearButton.addEventListener("click", () => {
+  commands.splice(0, commands.length);
+  redraw();
 });
