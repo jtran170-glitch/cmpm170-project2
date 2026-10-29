@@ -78,9 +78,17 @@ canvas.addEventListener("mouseup", () => {
 
 const clearButton = document.createElement("button");
 clearButton.innerHTML = "clear";
-document.body.append(clearButton);
+app.append(clearButton);
 
 clearButton.addEventListener("click", () => {
   strokes = [];
+  redraw();
+});
+
+const redrawButton = document.createElement("button");
+redrawButton.innerHTML = "redraw";
+app.append(redrawButton);
+
+redrawButton.addEventListener("click", () => {
   redraw();
 });
