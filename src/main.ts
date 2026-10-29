@@ -29,12 +29,14 @@ class LineCommand implements Command {
     public thickness: number,
     startX: number,
     startY: number,
+    public isEraser: boolean = false,
   ) {
     this.points.push({ x: startX, y: startY });
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
     if (this.points.length > 0) {
+      if (this.isEraser) ctx.globalCompositeOperation = "destination-out";
       ctx.beginPath();
       ctx.strokeStyle = this.color;
       ctx.lineWidth = this.thickness;
@@ -44,6 +46,7 @@ class LineCommand implements Command {
         ctx.lineTo(x, y);
       }
       ctx.stroke();
+      if (this.isEraser) ctx.globalCompositeOperation = "source-over";
     }
   }
 }
@@ -53,6 +56,7 @@ const redoStack: Command[] = [];
 let currentLine: LineCommand | null = null;
 let currentThickness = 2;
 let currentColor = "#000000";
+let currentTool: "marker" | "eraser" = "marker";
 
 function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -61,6 +65,7 @@ function redraw() {
   }
 }
 
+// buttons
 const markersDiv = document.createElement("div");
 markersDiv.style.marginBottom = "10px";
 markersDiv.style.display = "flex";
@@ -104,11 +109,16 @@ function createDrawingButton(
 let activeMarkerBtn: HTMLButtonElement | null = null;
 let activeColorBtn: HTMLButtonElement | null = null;
 
-function selectMarker(btn: HTMLButtonElement, thickness: number) {
+function selectTool(
+  btn: HTMLButtonElement,
+  tool: "marker" | "eraser",
+  thickness: number,
+) {
   if (activeMarkerBtn) activeMarkerBtn.style.background = "transparent";
   btn.style.background = "#e0e0e0";
   activeMarkerBtn = btn;
   currentThickness = thickness;
+  currentTool = tool;
 }
 
 function selectColor(btn: HTMLButtonElement, color: string) {
@@ -118,20 +128,47 @@ function selectColor(btn: HTMLButtonElement, color: string) {
   currentColor = color;
 }
 
+// eraser
+createDrawingButton(
+  "🧽",
+  (btn) => selectTool(btn, "eraser", 18),
+  "#000000",
+  markersDiv,
+);
+// thin marker
 const thinMarker = createDrawingButton(
   "⊙",
-  (btn) => selectMarker(btn, 2),
+  (btn) => selectTool(btn, "marker", 2),
   "#000000",
   markersDiv,
 );
+// thick marker
 createDrawingButton(
   "◉",
-  (btn) => selectMarker(btn, 6),
+  (btn) => selectTool(btn, "marker", 6),
   "#000000",
   markersDiv,
 );
-selectMarker(thinMarker, 2);
+selectTool(thinMarker, "marker", 2);
+// custom marker
+const customMarkerBtn = createDrawingButton(
+  "◎",
+  (btn) => selectTool(btn, "marker", Number(thicknessSlider.value)),
+  "#000000",
+  markersDiv,
+);
+const thicknessSlider = document.createElement("input");
+thicknessSlider.type = "range";
+thicknessSlider.min = "1";
+thicknessSlider.max = "50";
+thicknessSlider.value = "10";
+thicknessSlider.style.margin = "0 10px";
+thicknessSlider.oninput = () => {
+  selectTool(customMarkerBtn, "marker", Number(thicknessSlider.value));
+};
+markersDiv.append(thicknessSlider);
 
+// color buttons
 const colors = ["#000000", "#FF0000", "#0000FF", "#008000"];
 for (const color of colors) {
   const btn = createDrawingButton(
@@ -142,7 +179,24 @@ for (const color of colors) {
   );
   if (color === "#000000") selectColor(btn, color);
 }
+// custom color
+const customColorPicker = document.createElement("input");
+customColorPicker.type = "color";
+customColorPicker.value = "#000000";
+customColorPicker.style.margin = "0 10px";
+customColorPicker.oninput = () => {
+  selectColor(customColorBtn, customColorPicker.value);
+  customColorBtn.style.color = customColorPicker.value;
+};
+colorsDiv.append(customColorPicker);
+const customColorBtn = createDrawingButton(
+  "⬤",
+  (btn) => selectColor(btn, customColorPicker.value),
+  "#000000",
+  colorsDiv,
+);
 
+// drawing behavior
 canvas.addEventListener("mousedown", (e) => {
   cursor.active = true;
   cursor.x = e.offsetX;
@@ -154,6 +208,7 @@ canvas.addEventListener("mousedown", (e) => {
     currentThickness,
     e.offsetX,
     e.offsetY,
+    currentTool === "eraser",
   );
   commands.push(currentLine);
 
