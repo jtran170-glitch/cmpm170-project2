@@ -315,7 +315,7 @@ rulesText.innerHTML = `
 4. NEITHER PLAYERS NOR THE JUDGE ARE ALLOWED TO COMMUNICATE WITH EACH OTHER IN ANY WAY.<br>
 5. Once a player's timer ends, the next player takes their turn. They have ${SWITCH_TIME} seconds to switch players.<br>
 6. After all players draw, the judge will review all the drawings made that round.<br>
-7. The judge must determine if all the drawings are the same i.e. having the same features. If yes, the players win the game. If no, the judge must reveal how many similarities, but not exactly what they are, that are found between all the drawings.
+7. The judge must determine if all the drawings are the same i.e. having the same features. If yes, the players win the game. If no, the judge must reveal how many similarities, but not exactly what they are, that are found between all the drawings.<br>
 8. The drawing phase begins again until the players win.
 `;
 rulesText.style.maxWidth = "400px";
