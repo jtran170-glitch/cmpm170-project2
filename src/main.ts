@@ -1,3 +1,5 @@
+import "./style.css";
+
 const app = document.querySelector<HTMLElement>("#app")!;
 
 const heading = document.createElement("h1");
@@ -15,11 +17,30 @@ let similarities: number | null = null;
 const DRAW_TIME = 45;
 const SWITCH_TIME = 5;
 
+//used for possible playtesting with different paramaters
+type testMode = "original" | "test";
+let testMode: testMode = "original";
+
+type JudgeDecision = "green" | "yellow" | "red";
+interface ColorFeedback{
+  shape: JudgeDecision;
+  color: JudgeDecision;
+  position: JudgeDecision;
+  size: JudgeDecision;
+}
+
+let previousFeedback: ColorFeedback | null = null;
+
 // view containers
 const setupView = document.createElement("div");
 const drawView = document.createElement("div");
 const switchView = document.createElement("div");
 const judgeView = document.createElement("div");
+
+setupView.className = "game-view setup-view";
+drawView.className = "game-view";
+switchView.className = "game-view";
+judgeView.className = "game-view";
 
 function showView(view: HTMLDivElement) {
   [setupView, drawView, switchView, judgeView].forEach((v) =>
@@ -315,7 +336,7 @@ rulesText.innerHTML = `
 4. NEITHER PLAYERS NOR THE JUDGE ARE ALLOWED TO COMMUNICATE WITH EACH OTHER IN ANY WAY.<br>
 5. Once a player's timer ends, the next player takes their turn. They have ${SWITCH_TIME} seconds to switch players.<br>
 6. After all players draw, the judge will review all the drawings made that round.<br>
-7. The judge must determine if all the drawings are the same i.e. having the same features. If yes, the players win the game. If no, the judge must reveal how many similarities, but not exactly what they are, that are found between all the drawings.
+7. The judge must determine if all the drawings are the same i.e. having the same features. If yes, the players win the game. If no, the judge must reveal how many similarities, but not exactly what they are, that are found between all the drawings.<br>
 8. The drawing phase begins again until the players win.
 `;
 rulesText.style.maxWidth = "400px";
@@ -326,20 +347,57 @@ playerInput.type = "number";
 playerInput.min = "2";
 playerInput.value = "3";
 
+//Select playtest version
+const modeSelect = document.createElement("select");
+const originalOption = document.createElement("option");
+originalOption.value = "original";
+originalOption.textContent = "Original Mode";
+
+const judgeOption = document.createElement("option");
+judgeOption.value = "test";
+judgeOption.textContent = "Test Mode (for playtesting)";
+
+modeSelect.append(originalOption, judgeOption);
+
 const startButton = document.createElement("button");
 startButton.innerHTML = "Start";
+
+const setupControls = document.createElement("div");
+setupControls.className = "setup-controls";
+const modeRow = document.createElement("div");
+modeRow.className = "setup-row";
+modeRow.append(
+  document.createTextNode("Select mode: "),
+  modeSelect,
+);
+
+const playerRow = document.createElement("div");
+playerRow.className = "setup-row";
+playerRow.append(
+  document.createTextNode("How many players? (drawing only) "),
+  playerInput,
+  startButton
+);
+
+setupControls.append(modeRow, playerRow);
+
 
 setupView.append(
   rulesTitle,
   rulesText,
-  document.createTextNode("How many players? (drawing only) "),
-  playerInput,
-  startButton,
+  setupControls,
+  //document.createTextNode("How many players? (drawing only) "),
+  //playerInput,
+  //startButton,
 );
 app.append(setupView, drawView, switchView, judgeView);
 
 startButton.addEventListener("click", () => {
   totalPlayers = parseInt(playerInput.value);
+
+  testMode = modeSelect.value as testMode;
+  previousFeedback = null;
+
   currentPlayer = 1;
   currentRound = 1;
   similarities = null;
@@ -466,12 +524,18 @@ matchButton.addEventListener("click", () => {
 });
 
 noMatchButton.addEventListener("click", () => {
+  if (testMode === "original"){
   similarities = parseInt(prompt("How many similarities are there?")!);
   while (Number.isNaN(similarities)) {
     similarities = parseInt(prompt("How many similarities are there?")!);
   }
+}
   currentPlayer = 1;
   currentRound++;
   playerDrawings = [];
   startDrawingTurn();
+//}else{
+  //where category code will go
+
+//}
 });
