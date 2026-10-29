@@ -12,7 +12,7 @@ let playerDrawings: Command[][] = [];
 const prompts = ["a snowman", "a panda", "a turkey"];
 let currentPrompt = "";
 let similarities: number | null = null;
-const DRAW_TIME = 25;
+const DRAW_TIME = 45;
 const SWITCH_TIME = 5;
 
 // view containers
@@ -332,7 +332,7 @@ startButton.innerHTML = "Start";
 setupView.append(
   rulesTitle,
   rulesText,
-  document.createTextNode("How many players? "),
+  document.createTextNode("How many players? (drawing only) "),
   playerInput,
   startButton,
 );
