@@ -12,7 +12,7 @@ let playerDrawings: Command[][] = [];
 const prompts = ["a snowman", "a panda", "a turkey"];
 let currentPrompt = "";
 let similarities: number | null = null;
-const DRAW_TIME = 15;
+const DRAW_TIME = 25;
 const SWITCH_TIME = 5;
 
 // view containers
@@ -203,15 +203,21 @@ thicknessSlider.oninput = () => {
 markersDiv.append(thicknessSlider);
 
 // color buttons
-const colors = ["#000000", "#FF0000", "#0000FF", "#008000"];
+const colors = ["#FF0000", "#0000FF", "#008000"];
+const blackColor = createDrawingButton(
+  "⬤",
+  (btn) => selectColor(btn, "#000000"),
+  "#000000",
+  colorsDiv,
+);
+selectColor(blackColor, "#000000");
 for (const color of colors) {
-  const btn = createDrawingButton(
+  createDrawingButton(
     "⬤",
     (btn) => selectColor(btn, color),
     color,
     colorsDiv,
   );
-  if (color === "#000000") selectColor(btn, color);
 }
 // custom color
 const customColorPicker = document.createElement("input");
@@ -354,6 +360,12 @@ function startDrawingTurn() {
   redoStack.splice(0, redoStack.length);
   commands.push(new CircleCommand());
   redraw();
+
+  selectTool(thinMarker, "marker", 2);
+  selectColor(blackColor, "#000000");
+  thicknessSlider.value = "10";
+  customColorPicker.value = "#000000";
+  customColorBtn.style.color = customColorPicker.value;
 
   let timeRemaining = DRAW_TIME;
   timerDisplay.textContent = similarities !== null
