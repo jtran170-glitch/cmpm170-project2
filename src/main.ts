@@ -1,7 +1,7 @@
 const app = document.querySelector<HTMLElement>("#app")!;
 
 const heading = document.createElement("h1");
-heading.textContent = "CMPM 170 Project 2 Group 18";
+heading.textContent = "Scribble Clones";
 app.append(heading);
 
 // game state variables
@@ -306,7 +306,7 @@ clearButton.addEventListener("click", () => {
 
 // setup view
 const rulesTitle = document.createElement("h2");
-rulesTitle.textContent = "How to Play";
+rulesTitle.textContent = "How To Play";
 const rulesText = document.createElement("p");
 rulesText.innerHTML = `
 1. Select the number of players who will draw. One player not included will not draw and will be the judge.<br>
