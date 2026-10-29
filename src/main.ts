@@ -303,12 +303,14 @@ const rulesTitle = document.createElement("h2");
 rulesTitle.textContent = "How to Play";
 const rulesText = document.createElement("p");
 rulesText.innerHTML = `
-1. Choose the number of players who will draw. An extra person who will not draw will be the judge.<br>
-2. A random prompt will be given. Every canvas starts with a circle.<br>
-3. Each players gets ${DRAW_TIME} seconds to draw the prompt. NEITHER PLAYERS NOR THE JUDGE ARE ALLOWED TO COMMUNICATE WITH EACH OTHER IN ANY WAY.<br>
-4. The next player goes after the first person draws. They have ${SWITCH_TIME} seconds to switch players.<br>
-5. After all players take their turn to draw, the judge will review all the drawings that were made that round.<br>
-6. The judge determines if all the drawings are the same i.e. having the same features. If yes, the players win the game. If no, the judge must reveal how many similarities they found between all the drawings, then the drawing phase begins again.
+1. Select the number of players who will draw. One player not included will not draw and will be the judge.<br>
+2. A random prompt will be given. The goal is to draw the prompt as accurately as possible. Every canvas starts with a circle.<br>
+3. Each players is allotted ${DRAW_TIME} seconds to draw the prompt. Do not show other players your drawing.<br>
+4. NEITHER PLAYERS NOR THE JUDGE ARE ALLOWED TO COMMUNICATE WITH EACH OTHER IN ANY WAY.<br>
+5. Once a player's timer ends, the next player takes their turn. They have ${SWITCH_TIME} seconds to switch players.<br>
+6. After all players draw, the judge will review all the drawings made that round.<br>
+7. The judge must determine if all the drawings are the same i.e. having the same features. If yes, the players win the game. If no, the judge must reveal how many similarities, but not exactly what they are, that are found between all the drawings.
+8. The drawing phase begins again until the players win.
 `;
 rulesText.style.maxWidth = "400px";
 rulesText.style.lineHeight = "1.5";
