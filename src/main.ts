@@ -33,6 +33,8 @@ const canvas = document.createElement("canvas");
 canvas.width = 512;
 canvas.height = 512;
 canvas.style.border = "2px solid #000000";
+canvas.style.display = "block";
+canvas.style.margin = "0 auto";
 drawView.append(canvas);
 
 const ctx = canvas.getContext("2d")!;
@@ -106,6 +108,7 @@ markersDiv.style.marginBottom = "10px";
 markersDiv.style.display = "flex";
 markersDiv.style.alignItems = "center";
 markersDiv.style.flexWrap = "wrap";
+markersDiv.style.justifyContent = "center";
 drawView.append(markersDiv);
 
 const colorsDiv = document.createElement("div");
@@ -113,6 +116,7 @@ colorsDiv.style.marginBottom = "10px";
 colorsDiv.style.display = "flex";
 colorsDiv.style.alignItems = "center";
 colorsDiv.style.flexWrap = "wrap";
+colorsDiv.style.justifyContent = "center";
 drawView.append(colorsDiv);
 
 function createDrawingButton(
@@ -321,7 +325,7 @@ rulesText.innerHTML = `
 8. The drawing phase begins again until the players win.
 `;
 rulesText.style.textAlign = "center";
-rulesText.style.margin = "0 20px";
+rulesText.style.margin = "0 50px";
 rulesText.style.lineHeight = "1.5";
 
 const playerInput = document.createElement("input");
