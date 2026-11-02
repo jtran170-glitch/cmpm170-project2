@@ -2,6 +2,7 @@ const app = document.querySelector<HTMLElement>("#app")!;
 
 const heading = document.createElement("h1");
 heading.textContent = "Scribble Clones";
+heading.style.textAlign = "center";
 app.append(heading);
 
 // game state variables
@@ -307,6 +308,7 @@ clearButton.addEventListener("click", () => {
 // setup view
 const rulesTitle = document.createElement("h2");
 rulesTitle.textContent = "How To Play";
+rulesTitle.style.textAlign = "center";
 const rulesText = document.createElement("p");
 rulesText.innerHTML = `
 1. Select the number of players who will draw. One player not included will not draw and will be the judge.<br>
@@ -318,6 +320,7 @@ rulesText.innerHTML = `
 7. The judge must determine if all the drawings are the same i.e. having the same features. If yes, the players win the game. If no, the judge must reveal how many similarities, but not exactly what they are, that are found between all the drawings.<br>
 8. The drawing phase begins again until the players win.
 `;
+rulesText.style.textAlign = "center";
 rulesText.style.maxWidth = "400px";
 rulesText.style.lineHeight = "1.5";
 
@@ -337,6 +340,7 @@ setupView.append(
   startButton,
 );
 app.append(setupView, drawView, switchView, judgeView);
+setupView.style.textAlign = "center";
 
 startButton.addEventListener("click", () => {
   if (parseInt(playerInput.value) >= parseInt(playerInput.min)) {
