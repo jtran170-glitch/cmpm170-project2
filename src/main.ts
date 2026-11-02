@@ -321,7 +321,7 @@ rulesText.innerHTML = `
 8. The drawing phase begins again until the players win.
 `;
 rulesText.style.textAlign = "center";
-rulesText.style.margin = "0 auto";
+rulesText.style.margin = "0 20px";
 rulesText.style.lineHeight = "1.5";
 
 const playerInput = document.createElement("input");
