@@ -321,7 +321,7 @@ rulesText.innerHTML = `
 8. The drawing phase begins again until the players win.
 `;
 rulesText.style.textAlign = "center";
-rulesText.style.maxWidth = "400px";
+rulesText.style.margin = "0 auto";
 rulesText.style.lineHeight = "1.5";
 
 const playerInput = document.createElement("input");
@@ -339,8 +339,8 @@ setupView.append(
   playerInput,
   startButton,
 );
-app.append(setupView, drawView, switchView, judgeView);
 setupView.style.textAlign = "center";
+app.append(setupView, drawView, switchView, judgeView);
 
 startButton.addEventListener("click", () => {
   if (parseInt(playerInput.value) >= parseInt(playerInput.min)) {
@@ -357,9 +357,11 @@ showView(setupView);
 
 // drawing and switching view
 const timerDisplay = document.createElement("h2");
+timerDisplay.style.textAlign = "center";
 drawView.prepend(timerDisplay);
 
 const switchMessage = document.createElement("h1");
+switchMessage.style.textAlign = "center";
 switchView.append(switchMessage);
 
 function startDrawingTurn() {
