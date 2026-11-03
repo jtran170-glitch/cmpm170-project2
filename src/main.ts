@@ -276,6 +276,7 @@ canvas.addEventListener("mouseup", () => {
 });
 
 const controlsDiv = document.createElement("div");
+controlsDiv.style.textAlign = "center";
 drawView.append(controlsDiv);
 
 const undoButton = document.createElement("button");
