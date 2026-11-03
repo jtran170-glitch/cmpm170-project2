@@ -21,6 +21,8 @@ const setupView = document.createElement("div");
 const drawView = document.createElement("div");
 const switchView = document.createElement("div");
 const judgeView = document.createElement("div");
+setupView.style.textAlign = "center";
+judgeView.style.textAlign = "center";
 
 function showView(view: HTMLDivElement) {
   [setupView, drawView, switchView, judgeView].forEach((v) =>
@@ -281,7 +283,6 @@ drawView.append(controlsDiv);
 
 const undoButton = document.createElement("button");
 undoButton.innerHTML = "undo";
-undoButton.style.textAlign = "center";
 controlsDiv.append(undoButton);
 
 undoButton.addEventListener("click", () => {
@@ -293,7 +294,6 @@ undoButton.addEventListener("click", () => {
 
 const redoButton = document.createElement("button");
 redoButton.innerHTML = "redo";
-redoButton.style.textAlign = "center";
 controlsDiv.append(redoButton);
 
 redoButton.addEventListener("click", () => {
@@ -305,7 +305,6 @@ redoButton.addEventListener("click", () => {
 
 const clearButton = document.createElement("button");
 clearButton.innerHTML = "clear";
-clearButton.style.textAlign = "center";
 controlsDiv.append(clearButton);
 
 clearButton.addEventListener("click", () => {
@@ -316,7 +315,6 @@ clearButton.addEventListener("click", () => {
 // setup view
 const rulesTitle = document.createElement("h2");
 rulesTitle.textContent = "How To Play";
-rulesTitle.style.textAlign = "center";
 const rulesText = document.createElement("p");
 rulesText.innerHTML = `
 1. Select the number of players who will draw. One player not included will not draw and will be the judge.<br>
@@ -328,7 +326,6 @@ rulesText.innerHTML = `
 7. The judge must determine if all the drawings are the same i.e. having the same features. If yes, the players win the game. If no, the judge must reveal how many similarities, but not exactly what they are, that are found between all the drawings.<br>
 8. The drawing phase begins again until the players win.
 `;
-rulesText.style.textAlign = "center";
 rulesText.style.margin = "0 100px";
 rulesText.style.lineHeight = "1.5";
 
@@ -347,7 +344,6 @@ setupView.append(
   playerInput,
   startButton,
 );
-setupView.style.textAlign = "center";
 app.append(setupView, drawView, switchView, judgeView);
 
 startButton.addEventListener("click", () => {
