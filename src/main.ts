@@ -21,11 +21,13 @@ const setupView = document.createElement("div");
 const drawView = document.createElement("div");
 const switchView = document.createElement("div");
 const judgeView = document.createElement("div");
+const victoryView = document.createElement("div");
 setupView.style.textAlign = "center";
 judgeView.style.textAlign = "center";
+victoryView.style.textAlign = "center";
 
 function showView(view: HTMLDivElement) {
-  [setupView, drawView, switchView, judgeView].forEach((v) =>
+  [setupView, drawView, switchView, judgeView, victoryView].forEach((v) =>
     v.style.display = "none"
   );
   view.style.display = "block";
@@ -313,6 +315,15 @@ clearButton.addEventListener("click", () => {
 });
 
 // setup view
+const victoryTitle = document.createElement("h2");
+victoryTitle.textContent = "You're all clones!";
+victoryView.append(victoryTitle);
+const playAgainButton = document.createElement("button");
+playAgainButton.innerHTML = "Play Again";
+victoryView.append(playAgainButton);
+playAgainButton.addEventListener("click", () => {
+  showView(setupView);
+});
 const rulesTitle = document.createElement("h2");
 rulesTitle.textContent = "How To Play";
 const rulesText = document.createElement("p");
@@ -344,7 +355,7 @@ setupView.append(
   playerInput,
   startButton,
 );
-app.append(setupView, drawView, switchView, judgeView);
+app.append(setupView, drawView, switchView, judgeView, victoryView);
 
 startButton.addEventListener("click", () => {
   if (parseInt(playerInput.value) >= parseInt(playerInput.min)) {
@@ -474,7 +485,7 @@ function startJudgingPhase() {
 }
 
 matchButton.addEventListener("click", () => {
-  showView(setupView);
+  showView(victoryView);
 });
 
 noMatchButton.addEventListener("click", () => {
