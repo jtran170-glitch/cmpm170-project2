@@ -280,6 +280,7 @@ drawView.append(controlsDiv);
 
 const undoButton = document.createElement("button");
 undoButton.innerHTML = "undo";
+undoButton.style.textAlign = "center";
 controlsDiv.append(undoButton);
 
 undoButton.addEventListener("click", () => {
@@ -291,6 +292,7 @@ undoButton.addEventListener("click", () => {
 
 const redoButton = document.createElement("button");
 redoButton.innerHTML = "redo";
+redoButton.style.textAlign = "center";
 controlsDiv.append(redoButton);
 
 redoButton.addEventListener("click", () => {
@@ -302,6 +304,7 @@ redoButton.addEventListener("click", () => {
 
 const clearButton = document.createElement("button");
 clearButton.innerHTML = "clear";
+clearButton.style.textAlign = "center";
 controlsDiv.append(clearButton);
 
 clearButton.addEventListener("click", () => {
@@ -325,7 +328,7 @@ rulesText.innerHTML = `
 8. The drawing phase begins again until the players win.
 `;
 rulesText.style.textAlign = "center";
-rulesText.style.margin = "0 50px";
+rulesText.style.margin = "0 100px";
 rulesText.style.lineHeight = "1.5";
 
 const playerInput = document.createElement("input");
