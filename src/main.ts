@@ -34,7 +34,7 @@ canvas.width = 512;
 canvas.height = 512;
 canvas.style.border = "2px solid #000000";
 canvas.style.display = "block";
-canvas.style.margin = "0 auto";
+canvas.style.margin = "10px auto";
 drawView.append(canvas);
 
 const ctx = canvas.getContext("2d")!;
