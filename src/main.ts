@@ -40,14 +40,14 @@ type testMode = "original" | "test";
 let testMode: testMode = "original";
 
 type JudgeDecision = "green" | "yellow" | "red";
-interface ColorFeedback{
+interface ColorFeedback {
   shape: JudgeDecision;
   color: JudgeDecision;
   position: JudgeDecision;
   size: JudgeDecision;
 }
 
-let previousFeedback: ColorFeedback | null = null;
+//let previousFeedback: ColorFeedback | null = null;
 
 // view containers
 const setupView = document.createElement("div");
@@ -431,11 +431,10 @@ playerRow.className = "setup-row";
 playerRow.append(
   document.createTextNode("How many players? (drawing only) "),
   playerInput,
-  startButton
+  startButton,
 );
 
 setupControls.append(modeRow, playerRow);
-
 
 setupView.append(
   rulesTitle,
@@ -449,22 +448,21 @@ app.append(setupView, drawView, switchView, judgeView, victoryView);
 
 startButton.addEventListener("click", () => {
   if (parseInt(playerInput.value) >= parseInt(playerInput.min)) {
-  totalPlayers = parseInt(playerInput.value);
-  testMode = modeSelect.value as testMode;
-  previousFeedback = null;
+    totalPlayers = parseInt(playerInput.value);
+    testMode = modeSelect.value as testMode;
+    //previousFeedback = null;
 
-  currentPlayer = 1;
-  currentRound =1;
-  similarities = null;
-  playerDrawings = [];
+    currentPlayer = 1;
+    currentRound = 1;
+    similarities = null;
+    playerDrawings = [];
 
-  const selectedPrompt =
-    prompts[Math.floor(Math.random() * prompts.length)];
-  currentPrompt = selectedPrompt.name;
-  currentStartingShape = selectedPrompt.shape;
+    const selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+    currentPrompt = selectedPrompt.name;
+    currentStartingShape = selectedPrompt.shape;
 
-  startDrawingTurn();
-/*  totalPlayers = parseInt(playerInput.value);
+    startDrawingTurn();
+    /*  totalPlayers = parseInt(playerInput.value);
 
   testMode = modeSelect.value as testMode;
   previousFeedback = null;
@@ -507,13 +505,13 @@ function startDrawingTurn() {
 
   if (currentStartingShape === "circle") {
     commands.push(new CircleCommand());
-  }else if (currentStartingShape === "oval") {
+  } else if (currentStartingShape === "oval") {
     commands.push(new OvalCommand());
-  }else{
+  } else {
     commands.push(new RectangleCommand());
   }
 
-redraw();
+  redraw();
 
   selectTool(thinMarker, "marker", 2);
   selectColor(blackColor, "#000000");
@@ -618,18 +616,18 @@ matchButton.addEventListener("click", () => {
 });
 
 noMatchButton.addEventListener("click", () => {
-  if (testMode === "original"){
-  similarities = parseInt(prompt("How many similarities are there?")!);
-  while (Number.isNaN(similarities)) {
+  if (testMode === "original") {
     similarities = parseInt(prompt("How many similarities are there?")!);
+    while (Number.isNaN(similarities)) {
+      similarities = parseInt(prompt("How many similarities are there?")!);
+    }
   }
-}
   currentPlayer = 1;
   currentRound++;
   playerDrawings = [];
   startDrawingTurn();
-//}else{
+  //}else{
   //where category code will go
 
-//}
+  //}
 });
