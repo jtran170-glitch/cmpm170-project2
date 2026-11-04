@@ -1,3 +1,5 @@
+import "./style.css";
+
 const app = document.querySelector<HTMLElement>("#app")!;
 
 const heading = document.createElement("h1");
@@ -10,11 +12,42 @@ let totalPlayers = 0;
 let currentPlayer = 1;
 let currentRound = 1;
 let playerDrawings: Command[][] = [];
-const prompts = ["a snowman", "a panda", "a turkey"];
+
+type StartingShape = "circle" | "oval" | "rectangle";
+interface DrawingPrompt {
+  name: string;
+  shape: StartingShape;
+}
+const prompts: DrawingPrompt[] = [
+  { name: "a snowman", shape: "circle" },
+  { name: "a panda", shape: "circle" },
+  { name: "a turkey", shape: "oval" },
+  { name: "a cat", shape: "circle" },
+  { name: "a butterfly", shape: "oval" },
+  { name: "a fish", shape: "oval" },
+  { name: "a teddy bear", shape: "circle" },
+  { name: "a rocketship", shape: "rectangle" },
+];
+
 let currentPrompt = "";
+let currentStartingShape: StartingShape = "circle";
 let similarities: number | null = null;
 const DRAW_TIME = 30;
 const SWITCH_TIME = 5;
+
+//used for possible playtesting with different paramaters
+type testMode = "original" | "test";
+let testMode: testMode = "original";
+
+type JudgeDecision = "green" | "yellow" | "red";
+interface ColorFeedback{
+  shape: JudgeDecision;
+  color: JudgeDecision;
+  position: JudgeDecision;
+  size: JudgeDecision;
+}
+
+//let previousFeedback: ColorFeedback | null = null;
 
 // view containers
 const setupView = document.createElement("div");
@@ -25,6 +58,11 @@ const victoryView = document.createElement("div");
 setupView.style.textAlign = "center";
 judgeView.style.textAlign = "center";
 victoryView.style.textAlign = "center";
+
+setupView.className = "game-view setup-view";
+drawView.className = "game-view";
+switchView.className = "game-view";
+judgeView.className = "game-view";
 
 function showView(view: HTMLDivElement) {
   [setupView, drawView, switchView, judgeView, victoryView].forEach((v) =>
@@ -81,11 +119,30 @@ class LineCommand implements Command {
     }
   }
 }
+class RectangleCommand implements Command {
+  draw(ctx: CanvasRenderingContext2D): void {
+    ctx.beginPath();
+    ctx.rect(206, 156, 100, 200);
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+}
 
 class CircleCommand implements Command {
   draw(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
     ctx.arc(256, 256, 100, 0, 2 * Math.PI);
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+}
+
+class OvalCommand implements Command {
+  draw(ctx: CanvasRenderingContext2D): void {
+    ctx.beginPath();
+    ctx.ellipse(256, 256, 110, 70, 0, 0, 2 * Math.PI);
     ctx.strokeStyle = "#000000";
     ctx.lineWidth = 2;
     ctx.stroke();
@@ -329,7 +386,7 @@ rulesTitle.textContent = "How To Play";
 const rulesText = document.createElement("p");
 rulesText.innerHTML = `
 1. Select the number of players who will draw. One player not included will not draw and will be the judge.<br>
-2. A random prompt will be given. The goal is to draw the prompt as accurately as possible. Every canvas starts with a circle.<br>
+2. A random prompt will be given. The goal is to draw the prompt as accurately as possible. Every canvas starts with a prechosen shape based on the prompt.<br>
 3. Each player is allotted ${DRAW_TIME} seconds to draw the prompt. Do not show other players your drawing.<br>
 4. NEITHER PLAYERS NOR THE JUDGE ARE ALLOWED TO COMMUNICATE WITH EACH OTHER IN ANY WAY.<br>
 5. Once a player's timer ends, the next player takes their turn. They have ${SWITCH_TIME} seconds to switch players.<br>
@@ -345,19 +402,79 @@ playerInput.type = "number";
 playerInput.min = "2";
 playerInput.value = "3";
 
+//Select playtest version
+const modeSelect = document.createElement("select");
+const originalOption = document.createElement("option");
+originalOption.value = "original";
+originalOption.textContent = "Original Mode";
+
+const judgeOption = document.createElement("option");
+judgeOption.value = "test";
+judgeOption.textContent = "Test Mode (for playtesting)";
+
+modeSelect.append(originalOption, judgeOption);
+
 const startButton = document.createElement("button");
 startButton.innerHTML = "Start";
+
+const setupControls = document.createElement("div");
+setupControls.className = "setup-controls";
+const modeRow = document.createElement("div");
+modeRow.className = "setup-row";
+modeRow.append(
+  document.createTextNode("Select mode: "),
+  modeSelect,
+);
+
+const playerRow = document.createElement("div");
+playerRow.className = "setup-row";
+playerRow.append(
+  document.createTextNode("How many players? (drawing only) "),
+  playerInput,
+  startButton
+);
+
+setupControls.append(modeRow, playerRow);
+
 
 setupView.append(
   rulesTitle,
   rulesText,
-  document.createTextNode("How many players? (drawing only) "),
-  playerInput,
-  startButton,
+  setupControls,
+  //document.createTextNode("How many players? (drawing only) "),
+  //playerInput,
+  //startButton,
 );
 app.append(setupView, drawView, switchView, judgeView, victoryView);
 
 startButton.addEventListener("click", () => {
+  if (parseInt(playerInput.value) >= parseInt(playerInput.min)) {
+  totalPlayers = parseInt(playerInput.value);
+  testMode = modeSelect.value as testMode;
+  previousFeedback = null;
+
+  currentPlayer = 1;
+  currentRound =1;
+  similarities = null;
+  playerDrawings = [];
+
+  const selectedPrompt =
+    prompts[Math.floor(Math.random() * prompts.length)];
+  currentPrompt = selectedPrompt.name;
+  currentStartingShape = selectedPrompt.shape;
+
+  startDrawingTurn();
+/*  totalPlayers = parseInt(playerInput.value);
+
+  testMode = modeSelect.value as testMode;
+  previousFeedback = null;
+
+  currentPlayer = 1;
+  currentRound = 1;
+  similarities = null;
+  playerDrawings = [];
+  currentPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+  startDrawingTurn();
   if (parseInt(playerInput.value) >= parseInt(playerInput.min)) {
     totalPlayers = parseInt(playerInput.value);
     currentPlayer = 1;
@@ -365,7 +482,7 @@ startButton.addEventListener("click", () => {
     similarities = null;
     playerDrawings = [];
     currentPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-    startDrawingTurn();
+    startDrawingTurn();*/
   }
 });
 showView(setupView);
@@ -381,10 +498,22 @@ switchView.append(switchMessage);
 
 function startDrawingTurn() {
   showView(drawView);
+  //commands.splice(0, commands.length);
+  //redoStack.splice(0, redoStack.length);
+  //commands.push(new CircleCommand());
+  //redraw();
   commands.splice(0, commands.length);
   redoStack.splice(0, redoStack.length);
-  commands.push(new CircleCommand());
-  redraw();
+
+  if (currentStartingShape === "circle") {
+    commands.push(new CircleCommand());
+  }else if (currentStartingShape === "oval") {
+    commands.push(new OvalCommand());
+  }else{
+    commands.push(new RectangleCommand());
+  }
+
+redraw();
 
   selectTool(thinMarker, "marker", 2);
   selectColor(blackColor, "#000000");
@@ -489,12 +618,18 @@ matchButton.addEventListener("click", () => {
 });
 
 noMatchButton.addEventListener("click", () => {
+  if (testMode === "original"){
   similarities = parseInt(prompt("How many similarities are there?")!);
   while (Number.isNaN(similarities)) {
     similarities = parseInt(prompt("How many similarities are there?")!);
   }
+}
   currentPlayer = 1;
   currentRound++;
   playerDrawings = [];
   startDrawingTurn();
+//}else{
+  //where category code will go
+
+//}
 });
