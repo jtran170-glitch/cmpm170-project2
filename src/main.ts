@@ -4,6 +4,7 @@ const app = document.querySelector<HTMLElement>("#app")!;
 
 const heading = document.createElement("h1");
 heading.textContent = "Scribble Clones";
+heading.style.textAlign = "center";
 app.append(heading);
 
 // game state variables
@@ -14,7 +15,7 @@ let playerDrawings: Command[][] = [];
 const prompts = ["a snowman", "a panda", "a turkey"];
 let currentPrompt = "";
 let similarities: number | null = null;
-const DRAW_TIME = 45;
+const DRAW_TIME = 30;
 const SWITCH_TIME = 5;
 
 //used for possible playtesting with different paramaters
@@ -36,6 +37,10 @@ const setupView = document.createElement("div");
 const drawView = document.createElement("div");
 const switchView = document.createElement("div");
 const judgeView = document.createElement("div");
+const victoryView = document.createElement("div");
+setupView.style.textAlign = "center";
+judgeView.style.textAlign = "center";
+victoryView.style.textAlign = "center";
 
 setupView.className = "game-view setup-view";
 drawView.className = "game-view";
@@ -43,7 +48,7 @@ switchView.className = "game-view";
 judgeView.className = "game-view";
 
 function showView(view: HTMLDivElement) {
-  [setupView, drawView, switchView, judgeView].forEach((v) =>
+  [setupView, drawView, switchView, judgeView, victoryView].forEach((v) =>
     v.style.display = "none"
   );
   view.style.display = "block";
@@ -53,6 +58,8 @@ const canvas = document.createElement("canvas");
 canvas.width = 512;
 canvas.height = 512;
 canvas.style.border = "2px solid #000000";
+canvas.style.display = "block";
+canvas.style.margin = "10px auto";
 drawView.append(canvas);
 
 const ctx = canvas.getContext("2d")!;
@@ -126,6 +133,7 @@ markersDiv.style.marginBottom = "10px";
 markersDiv.style.display = "flex";
 markersDiv.style.alignItems = "center";
 markersDiv.style.flexWrap = "wrap";
+markersDiv.style.justifyContent = "center";
 drawView.append(markersDiv);
 
 const colorsDiv = document.createElement("div");
@@ -133,6 +141,7 @@ colorsDiv.style.marginBottom = "10px";
 colorsDiv.style.display = "flex";
 colorsDiv.style.alignItems = "center";
 colorsDiv.style.flexWrap = "wrap";
+colorsDiv.style.justifyContent = "center";
 drawView.append(colorsDiv);
 
 function createDrawingButton(
@@ -292,6 +301,7 @@ canvas.addEventListener("mouseup", () => {
 });
 
 const controlsDiv = document.createElement("div");
+controlsDiv.style.textAlign = "center";
 drawView.append(controlsDiv);
 
 const undoButton = document.createElement("button");
@@ -326,20 +336,29 @@ clearButton.addEventListener("click", () => {
 });
 
 // setup view
+const victoryTitle = document.createElement("h2");
+victoryTitle.textContent = "You're all clones!";
+victoryView.append(victoryTitle);
+const playAgainButton = document.createElement("button");
+playAgainButton.innerHTML = "Play Again";
+victoryView.append(playAgainButton);
+playAgainButton.addEventListener("click", () => {
+  showView(setupView);
+});
 const rulesTitle = document.createElement("h2");
 rulesTitle.textContent = "How To Play";
 const rulesText = document.createElement("p");
 rulesText.innerHTML = `
 1. Select the number of players who will draw. One player not included will not draw and will be the judge.<br>
 2. A random prompt will be given. The goal is to draw the prompt as accurately as possible. Every canvas starts with a circle.<br>
-3. Each players is allotted ${DRAW_TIME} seconds to draw the prompt. Do not show other players your drawing.<br>
+3. Each player is allotted ${DRAW_TIME} seconds to draw the prompt. Do not show other players your drawing.<br>
 4. NEITHER PLAYERS NOR THE JUDGE ARE ALLOWED TO COMMUNICATE WITH EACH OTHER IN ANY WAY.<br>
 5. Once a player's timer ends, the next player takes their turn. They have ${SWITCH_TIME} seconds to switch players.<br>
 6. After all players draw, the judge will review all the drawings made that round.<br>
 7. The judge must determine if all the drawings are the same i.e. having the same features. If yes, the players win the game. If no, the judge must reveal how many similarities, but not exactly what they are, that are found between all the drawings.<br>
 8. The drawing phase begins again until the players win.
 `;
-rulesText.style.maxWidth = "400px";
+rulesText.style.margin = "0 100px";
 rulesText.style.lineHeight = "1.5";
 
 const playerInput = document.createElement("input");
@@ -390,10 +409,23 @@ setupView.append(
   //playerInput,
   //startButton,
 );
-app.append(setupView, drawView, switchView, judgeView);
+app.append(setupView, drawView, switchView, judgeView, victoryView);
 
 startButton.addEventListener("click", () => {
+  if (parseInt(playerInput.value) >= parseInt(playerInput.min)) {
   totalPlayers = parseInt(playerInput.value);
+  testMode = modeSelect.value as testMode;
+  previousFeedback = null;
+
+  currentPlayer = 1;
+  currentRound =1;
+  similarities = null;
+  playerDrawings = [];
+
+  currentPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+  startDrawingTurn();
+/*  totalPlayers = parseInt(playerInput.value);
 
   testMode = modeSelect.value as testMode;
   previousFeedback = null;
@@ -404,14 +436,25 @@ startButton.addEventListener("click", () => {
   playerDrawings = [];
   currentPrompt = prompts[Math.floor(Math.random() * prompts.length)];
   startDrawingTurn();
+  if (parseInt(playerInput.value) >= parseInt(playerInput.min)) {
+    totalPlayers = parseInt(playerInput.value);
+    currentPlayer = 1;
+    currentRound = 1;
+    similarities = null;
+    playerDrawings = [];
+    currentPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+    startDrawingTurn();*/
+  }
 });
 showView(setupView);
 
 // drawing and switching view
 const timerDisplay = document.createElement("h2");
+timerDisplay.style.textAlign = "center";
 drawView.prepend(timerDisplay);
 
 const switchMessage = document.createElement("h1");
+switchMessage.style.textAlign = "center";
 switchView.append(switchMessage);
 
 function startDrawingTurn() {
@@ -520,7 +563,7 @@ function startJudgingPhase() {
 }
 
 matchButton.addEventListener("click", () => {
-  showView(setupView);
+  showView(victoryView);
 });
 
 noMatchButton.addEventListener("click", () => {
