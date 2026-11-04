@@ -47,7 +47,7 @@ interface ColorFeedback{
   size: JudgeDecision;
 }
 
-//let previousFeedback: ColorFeedback | null = null;
+let previousFeedback: ColorFeedback | null = null;
 
 // view containers
 const setupView = document.createElement("div");
