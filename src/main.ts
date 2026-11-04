@@ -12,8 +12,25 @@ let totalPlayers = 0;
 let currentPlayer = 1;
 let currentRound = 1;
 let playerDrawings: Command[][] = [];
-const prompts = ["a snowman", "a panda", "a turkey"];
+
+type StartingShape = "circle" | "oval" | "rectangle";
+interface DrawingPrompt {
+  name: string;
+  shape: StartingShape;
+}
+const prompts: DrawingPrompt[] = [
+  { name: "a snowman", shape: "circle" },
+  { name: "a panda", shape: "circle" },
+  { name: "a turkey", shape: "oval" },
+  { name: "a cat", shape: "circle" },
+  { name: "a butterfly", shape: "oval" },
+  { name: "a fish", shape: "oval" },
+  { name: "a teddy bear", shape: "circle" },
+  { name: "a rocketship", shape: "rectangle" },
+];
+
 let currentPrompt = "";
+let currentStartingShape: StartingShape = "circle";
 let similarities: number | null = null;
 const DRAW_TIME = 30;
 const SWITCH_TIME = 5;
@@ -30,7 +47,7 @@ interface ColorFeedback{
   size: JudgeDecision;
 }
 
-let previousFeedback: ColorFeedback | null = null;
+//let previousFeedback: ColorFeedback | null = null;
 
 // view containers
 const setupView = document.createElement("div");
@@ -102,11 +119,30 @@ class LineCommand implements Command {
     }
   }
 }
+class RectangleCommand implements Command {
+  draw(ctx: CanvasRenderingContext2D): void {
+    ctx.beginPath();
+    ctx.rect(206, 156, 100, 200);
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+}
 
 class CircleCommand implements Command {
   draw(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
     ctx.arc(256, 256, 100, 0, 2 * Math.PI);
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+}
+
+class OvalCommand implements Command {
+  draw(ctx: CanvasRenderingContext2D): void {
+    ctx.beginPath();
+    ctx.ellipse(256, 256, 110, 70, 0, 0, 2 * Math.PI);
     ctx.strokeStyle = "#000000";
     ctx.lineWidth = 2;
     ctx.stroke();
@@ -350,7 +386,7 @@ rulesTitle.textContent = "How To Play";
 const rulesText = document.createElement("p");
 rulesText.innerHTML = `
 1. Select the number of players who will draw. One player not included will not draw and will be the judge.<br>
-2. A random prompt will be given. The goal is to draw the prompt as accurately as possible. Every canvas starts with a circle.<br>
+2. A random prompt will be given. The goal is to draw the prompt as accurately as possible. Every canvas starts with a prechosen shape based on the prompt.<br>
 3. Each player is allotted ${DRAW_TIME} seconds to draw the prompt. Do not show other players your drawing.<br>
 4. NEITHER PLAYERS NOR THE JUDGE ARE ALLOWED TO COMMUNICATE WITH EACH OTHER IN ANY WAY.<br>
 5. Once a player's timer ends, the next player takes their turn. They have ${SWITCH_TIME} seconds to switch players.<br>
@@ -422,7 +458,10 @@ startButton.addEventListener("click", () => {
   similarities = null;
   playerDrawings = [];
 
-  currentPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+  const selectedPrompt =
+    prompts[Math.floor(Math.random() * prompts.length)];
+  currentPrompt = selectedPrompt.name;
+  currentStartingShape = selectedPrompt.shape;
 
   startDrawingTurn();
 /*  totalPlayers = parseInt(playerInput.value);
@@ -459,10 +498,22 @@ switchView.append(switchMessage);
 
 function startDrawingTurn() {
   showView(drawView);
+  //commands.splice(0, commands.length);
+  //redoStack.splice(0, redoStack.length);
+  //commands.push(new CircleCommand());
+  //redraw();
   commands.splice(0, commands.length);
   redoStack.splice(0, redoStack.length);
-  commands.push(new CircleCommand());
-  redraw();
+
+  if (currentStartingShape === "circle") {
+    commands.push(new CircleCommand());
+  }else if (currentStartingShape === "oval") {
+    commands.push(new OvalCommand());
+  }else{
+    commands.push(new RectangleCommand());
+  }
+
+redraw();
 
   selectTool(thinMarker, "marker", 2);
   selectColor(blackColor, "#000000");
